@@ -1,0 +1,11 @@
+[package]
+name = "rust-docs-pic"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = "4.5.60"
+handlebars = "6.4.0"
+tree-sitter = "0.26.5"
+tree-sitter-rust = "0.24.0"
+walkdir = "2.5.0"
