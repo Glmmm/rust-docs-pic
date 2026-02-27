@@ -1,0 +1,5 @@
+[configuration]
+root_dir = "."
+exclude_patterns = ["cleitin.rs"]
+recursive = true
+show_hidden = false 
