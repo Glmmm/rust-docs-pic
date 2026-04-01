@@ -1,14 +1,14 @@
-use crate::config::utils::search_config_file;
+use super::utils::search_config_file;
 
 #[derive(Debug, serde::Deserialize)]
-pub struct Options {
+pub struct Configuration {
     pub root_dir: String,
     pub exclude_patterns: Vec<String>,
     pub recursive: bool,
     pub show_hidden: bool,
 }
 
-impl Options {
+impl Configuration {
     fn new() -> Self {
         Self {
             root_dir: ".".to_string(),
@@ -18,7 +18,7 @@ impl Options {
         }
     }
 
-    pub fn from() -> Self {
+    pub fn from_file() -> Self {
         let config = search_config_file(&Self::new()).unwrap_or_else(|| {
             println!("Configurações não encontradas. Iniciando com valores padrão");
             Self::new()
