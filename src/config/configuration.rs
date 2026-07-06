@@ -1,33 +1,44 @@
-use super::utils::search_config_file;
+use serde::Deserialize;
+use std::fs;
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct Configuration {
-    pub root_dir: String,
-    pub exclude_patterns: Vec<String>,
+    pub input_path: String,
+    pub output_path: String,
+    pub template_path: String,
+    pub exclude: Vec<String>,
     pub recursive: bool,
-    pub show_hidden: bool,
+    pub include_hidden: bool,
+    pub verbose: bool,
 }
 
 impl Configuration {
-    fn new() -> Self {
-        Self {
-            root_dir: ".".to_string(),
-            exclude_patterns: vec![],
-            recursive: true,
-            show_hidden: false,
-        }
+    pub fn default() -> Self {
+        return Self {
+            input_path: "./src".into(),
+            output_path: "docs".into(),
+            template_path: "../template.md".into(),
+            exclude: vec![
+                ["client", "target", "tests", "examples", "benches"]
+                    .into_iter()
+                    .map(|s| s.to_string())
+                    .collect(),
+            ],
+            recursive: false,
+            include_hidden: false,
+            verbose: true,
+        };
     }
 
-    pub fn from_file() -> Self {
-        let config = search_config_file(&Self::new()).unwrap_or_else(|| {
-            println!("Configurações não encontradas. Iniciando com valores padrão");
-            Self::new()
-        });
-        Self {
-            root_dir: config.root_dir,
-            exclude_patterns: config.exclude_patterns,
-            recursive: config.recursive,
-            show_hidden: config.show_hidden,
-        }
+    pub fn from_file(path: Option<&str>) -> Self {
+        let path = path.unwrap_or_else(|| ".");
+
+        let file = &fs::read_to_string(path).unwrap_or_else(|_| String::new());
+
+        let toml: Self = match toml::from_str(file) {
+            Ok(config) => config,
+            Err(_) => return Self::default(),
+        };
+        return toml;
     }
 }

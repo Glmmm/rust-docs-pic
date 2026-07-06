@@ -1,2 +1,2 @@
-pub mod handlebars;
-pub mod utils;
+mod template;
+pub use template::*;

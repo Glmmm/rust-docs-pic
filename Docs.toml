@@ -1,5 +1,8 @@
 [configuration]
-root_dir = "."
-exclude_patterns = ["cleitin.rs"]
+input_dir = "."
+output_dir = "docs"
+template_path= "."
+exclude = ["client", "target", "tests", "examples", "benches"]
 recursive = true
-show_hidden = false 
+include_hidden = false
+verbose = true
