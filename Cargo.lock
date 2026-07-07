@@ -385,7 +385,6 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "handlebars",
- "log",
  "serde",
  "streaming-iterator",
  "toml",

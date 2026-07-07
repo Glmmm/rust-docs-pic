@@ -19,10 +19,19 @@ impl Configuration {
             output_path: "docs".into(),
             template_path: "../template.md".into(),
             exclude: vec![
-                ["client", "target", "tests", "examples", "benches"]
-                    .into_iter()
-                    .map(|s| s.to_string())
-                    .collect(),
+                [
+                    "client",
+                    "target",
+                    "tests",
+                    "examples",
+                    "template.md",
+                    "docs",
+                    "node_modules",
+                    "build.rs",
+                ]
+                .into_iter()
+                .map(|s| s.to_string())
+                .collect(),
             ],
             recursive: false,
             include_hidden: false,

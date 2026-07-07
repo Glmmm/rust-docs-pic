@@ -2,31 +2,26 @@
 # 📋 Documentação: {{name}}
 ---
 
-## 🏗️ Diagrama de Estrutura
+## 🏗️ Diagrama da Estrutura
 
 Diagramas gerados automaticamente para retratar a hierarquia das classes
 
-<!-- TODO: adicionar interação click para diagramas
-
-```mermaid
-flowchart LR
-    A->B
-    B->C
-    C->D
-    click A callback "Tooltip for a callback"
-    click B "https://www.github.com" "This is a tooltip for a link"
-    click C call callback() "Tooltip for a callback"
-    click D href "https://www.github.com" "This is a tooltip for a link"
-```
---->
+{{#if structs}}
 
 ```mermaid
 graph TD;
     {{#each structs}}
     {{name}} --> {{this.name}};
+    click {{name}} "./{{path}}{{name}}"
     {{/each}}
 
 ```
+
+{{else}}
+:::note
+se pá que não teve diagrama
+:::
+{{/if}}
 
 ---
 
@@ -34,11 +29,30 @@ graph TD;
 
 Campos definidos nas estruturas encontradas no módulo:
 
-| Nome do Campo    | Tipo de Dado       |
-| ---------------- | ------------------ |
-| {{#each fields}} |                    |
-| `{{this.name}}`  | {{this.data_type}} |
-| {{/each}}        |                    |
+{{#if fields}}
+
+<table>
+  <thead>
+    <tr>
+      <th>Nome do Campo</th>
+      <th>Tipo de Dado</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each fields}}
+    <tr>
+      <td>{{this.name}}</td>
+      <td>{{this.data_type}}</td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+{{else}}
+:::note
+se pá que não tem nenhuma variável
+:::
+{{/if}}
 
 ---
 
@@ -46,33 +60,27 @@ Campos definidos nas estruturas encontradas no módulo:
 
 Lista de funções identificadas e suas respectivas assinaturas:
 
+{{#if functions}}
+
 {{#each functions}}
-
-### `{{this.signature}}`
-
 **Comentário**: {{this.comment}}
 
----
+```rust
+{{{this.signature}}}
+```
 
 {{/each}}
+{{else}}
+:::note
+se pá que não tem nenhuma função
+:::
+{{/if}}
 
-<!-- TODO: adicinar titulo (path) do código ou accordion
-
-```js:app.js
-console.log("Hello, world!");
-```
-
-```
-// app.js
-console.log("Hello, world!");
-```
--->
+---
 
 ## 📂 Código-Fonte Completo
 
-```rust
+```rust title="{{path}}"
 {{{source_code}}}
 
 ```
-
----

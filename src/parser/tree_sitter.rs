@@ -2,7 +2,6 @@ use serde::Serialize;
 use streaming_iterator::StreamingIterator;
 use tree_sitter::{Language, Parser as TSParser, Query, QueryCursor};
 
-//TODO: achar lugar melhor pra colocar essas structs
 #[derive(Serialize, Debug)]
 pub struct FuncInfo {
     pub comment: String,
@@ -27,29 +26,24 @@ pub struct TemplateData {
     pub structs: Vec<StructInfo>,
     pub fields: Vec<FieldInfo>,
     pub functions: Vec<FuncInfo>,
+    pub path: String,
 }
-
+// Extracts the AST from the given source code and returns a tuple containing vectors of StructInfo, FieldInfo, and FuncInfo.
 pub fn extract_ast(
     source_code: &str,
 ) -> Result<(Vec<StructInfo>, Vec<FieldInfo>, Vec<FuncInfo>), Box<dyn std::error::Error>> {
-    let query_str = r#"
-        (struct_item name: (type_identifier) @struct.name)
-        (field_declaration name: (field_identifier) @field.name) 
-        (function_item name: (identifier) @func.name)
-    "#;
-
     let mut parser = TSParser::new();
-
     let language: Language = tree_sitter_rust::LANGUAGE.into();
-
     parser.set_language(&language)?;
 
+    let query_str = r#"
+    (struct_item name: (type_identifier) @struct.name)
+    (field_declaration name: (field_identifier) @field.name type: (_) @field.type)
+    (function_item) @func.full
+"#;
+
     let query = Query::new(&language, query_str)?;
-
-    let tree = parser
-        .parse(source_code, None)
-        .unwrap_or_else(|| panic!("Falha ao analisar o código-fonte"));
-
+    let tree = parser.parse(source_code, None).ok_or("Falha ao analisar")?;
     let mut cursor = QueryCursor::new();
     let mut matches = cursor.matches(&query, tree.root_node(), source_code.as_bytes());
 
@@ -59,33 +53,56 @@ pub fn extract_ast(
 
     while let Some(m) = matches.next() {
         for capture in m.captures {
+            let name = query.capture_names()[capture.index as usize];
             let node = capture.node;
-            if let Ok(text) = node.utf8_text(source_code.as_bytes()) {
-                let text = text.to_string();
-                let capture_name = query.capture_names()[capture.index as usize];
-                match capture_name {
-                    "struct.name" => structs.push(StructInfo { name: text }),
-                    "field.name" => fields.push(FieldInfo {
-                        name: text.clone(),
-                        data_type: "unknown".to_string(),
-                    }),
-                    "func.name" => {
-                        functions.push(FuncInfo {
-                            comment: "Comentário autogerado".to_string(),
-                            signature: node.parent().map_or(text.clone(), |p| {
-                                p.utf8_text(source_code.as_bytes())
-                                    .unwrap_or(&text)
-                                    .lines()
-                                    .next()
-                                    .unwrap_or(&text)
-                                    .to_string()
-                            }),
-                        });
-                    }
-                    _ => {}
+            let text = node.utf8_text(source_code.as_bytes()).unwrap_or("");
+
+            match name {
+                "struct.name" => structs.push(StructInfo {
+                    name: text.to_string(),
+                }),
+
+                "field.name" => {
+                    let field_type = node
+                        .next_sibling()
+                        .and_then(|n| n.next_sibling())
+                        .and_then(|n| n.utf8_text(source_code.as_bytes()).ok())
+                        .unwrap_or("unknown");
+
+                    fields.push(FieldInfo {
+                        name: text.to_string(),
+                        data_type: field_type.to_string(),
+                    });
                 }
+
+                "func.full" => {
+                    let full_text = text;
+                    let signature = full_text
+                        .split('{')
+                        .next()
+                        .unwrap_or(full_text)
+                        .trim()
+                        .to_string();
+
+                    let prev = node.prev_sibling();
+                    let mut comment = String::new();
+
+                    if let Some(p) = prev {
+                        if p.kind() == "line_comment" {
+                            comment = p
+                                .utf8_text(source_code.as_bytes())
+                                .unwrap_or("")
+                                .replace("//", "")
+                                .trim()
+                                .to_string();
+                        }
+                    }
+
+                    functions.push(FuncInfo { comment, signature });
+                }
+                _ => {}
             }
         }
     }
-    return Ok((structs, fields, functions));
+    Ok((structs, fields, functions))
 }

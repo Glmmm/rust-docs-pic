@@ -2,7 +2,7 @@
 input_dir = "."
 output_dir = "docs"
 template_path= "."
-exclude = ["client", "target", "tests", "examples", "benches"]
+exclude = ["client", "target", "tests", "examples"]
 recursive = true
 include_hidden = false
 verbose = true

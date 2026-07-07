@@ -12,7 +12,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Commands::Rustdoc { rust } => {
             if rust {
                 run_analyzer(config)?;
-            } else {
             }
         }
     }
@@ -34,6 +33,7 @@ fn run_analyzer(config: Configuration) -> Result<(), Box<dyn std::error::Error>>
                     structs,
                     fields,
                     functions,
+                    path: path.to_string_lossy().into_owned(),
                 };
 
                 generate_markdown(&data, &config, &path)?;
