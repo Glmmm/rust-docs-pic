@@ -28,7 +28,7 @@ pub struct TemplateData {
     pub functions: Vec<FuncInfo>,
     pub path: String,
 }
-// Extracts the AST from the given source code and returns a tuple containing vectors of StructInfo, FieldInfo, and FuncInfo.
+
 pub fn extract_ast(
     source_code: &str,
 ) -> Result<(Vec<StructInfo>, Vec<FieldInfo>, Vec<FuncInfo>), Box<dyn std::error::Error>> {
@@ -37,10 +37,12 @@ pub fn extract_ast(
     parser.set_language(&language)?;
 
     let query_str = r#"
-    (struct_item name: (type_identifier) @struct.name)
-    (field_declaration name: (field_identifier) @field.name type: (_) @field.type)
-    (function_item) @func.full
-"#;
+    (struct_item 
+        name: (type_identifier) @struct.name)
+    (field_declaration 
+        name: (field_identifier) @field.name 
+        type: (_) @field.type) 
+    (function_item) @func.full"#;
 
     let query = Query::new(&language, query_str)?;
     let tree = parser.parse(source_code, None).ok_or("Falha ao analisar")?;

@@ -1,6 +1,8 @@
 use serde::Deserialize;
 use std::fs;
 
+use crate::log;
+
 #[derive(Deserialize, Debug)]
 pub struct Configuration {
     pub input_path: String,
@@ -11,28 +13,15 @@ pub struct Configuration {
     pub include_hidden: bool,
     pub verbose: bool,
 }
-
+//TODO: implementar tela de configuração
 impl Configuration {
     pub fn default() -> Self {
+        log::info("Iniciando com a configuração padrão");
         return Self {
             input_path: "./src".into(),
-            output_path: "docs".into(),
+            output_path: "./docs".into(),
             template_path: "../template.md".into(),
-            exclude: vec![
-                [
-                    "client",
-                    "target",
-                    "tests",
-                    "examples",
-                    "template.md",
-                    "docs",
-                    "node_modules",
-                    "build.rs",
-                ]
-                .into_iter()
-                .map(|s| s.to_string())
-                .collect(),
-            ],
+            exclude: vec![],
             recursive: false,
             include_hidden: false,
             verbose: true,
@@ -40,14 +29,16 @@ impl Configuration {
     }
 
     pub fn from_file(path: Option<&str>) -> Self {
-        let path = path.unwrap_or_else(|| ".");
+        let path = path.unwrap_or("Docs.toml");
 
-        let file = &fs::read_to_string(path).unwrap_or_else(|_| String::new());
-
-        let toml: Self = match toml::from_str(file) {
-            Ok(config) => config,
+        let contents = match fs::read_to_string(path) {
+            Ok(c) => c,
             Err(_) => return Self::default(),
         };
-        return toml;
+
+        match toml::from_str(&contents) {
+            Ok(config) => return config,
+            Err(_) => return Self::default(),
+        };
     }
 }

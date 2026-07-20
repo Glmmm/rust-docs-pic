@@ -1,8 +1,7 @@
-[configuration]
-input_dir = "."
-output_dir = "docs"
-template_path= "."
-exclude = ["client", "target", "tests", "examples"]
+input_path = "./src"
+output_path = "./docs"
+template_path= "./src/template.md"
+exclude = ["client", "target", "tests", "examples", "template.md", "docs", "node_modules", "build.rs",]
 recursive = true
 include_hidden = false
 verbose = true

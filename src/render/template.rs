@@ -1,8 +1,9 @@
 use crate::config::Configuration;
+use crate::log;
 use crate::parser::TemplateData;
 use handlebars::Handlebars;
 
-use std::fs::{File, create_dir_all};
+use std::fs::{self, File, create_dir_all};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
@@ -13,11 +14,17 @@ pub fn generate_markdown(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut handlebars = Handlebars::new();
 
-    let template_str = include_str!("../template.md");
+    let template_str = match fs::read_to_string(&config.template_path) {
+        Ok(str) => str,
+        Err(_) => {
+            log::error("Template não encontrado");
+            String::new()
+        }
+    };
 
-    handlebars.register_template_string("doc_template", template_str)?;
+    handlebars.register_template_string("docs_template", template_str)?;
 
-    let rendered = handlebars.render("doc_template", data)?;
+    let rendered = handlebars.render("docs_template", data)?;
 
     let relative_path = original_path.strip_prefix(&config.input_path)?;
     let mut target_path = PathBuf::from(&config.output_path).join(relative_path);
