@@ -8,3 +8,5 @@
 (template.rs)
 //TODO: aprimorar diagramas (linkagem e significado);
 //FUTURE: diferentes formatos de template
+
+//

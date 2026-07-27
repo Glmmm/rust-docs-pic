@@ -17,10 +17,17 @@ pub fn generate_markdown(
     let template_str = match fs::read_to_string(&config.template_path) {
         Ok(str) => str,
         Err(_) => {
-            log::error("Template não encontrado");
-            String::new()
+            panic!(
+                "Template não encontrado em '{}', impossível prosseguir",
+                &config.template_path
+            )
         }
     };
+
+    log::info(
+        &format!("Renderizando: {:?}", original_path),
+        config.verbose,
+    );
 
     handlebars.register_template_string("docs_template", template_str)?;
 
